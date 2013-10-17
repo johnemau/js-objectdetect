@@ -34,24 +34,35 @@
 		} catch (error) {
 			alert(error);
 		}
-		
+	
+		function getFaceBox(index) {
+			var $facebox = $("#face-box-" + index);
+			// try to get existing box
+			if($facebox.length > 0) {
+				return $facebox;	
+			} else {
+				//add new facebox
+				var $newfacebox = $('<div id="face-box-' + index + '" class="red-box">');
+				$("body").append($newfacebox);
+				return $newfacebox;
+			}
+		}
+
 		function tick() {
 			compatibility.requestAnimationFrame(tick);
 			
 			if (video.readyState === video.HAVE_ENOUGH_DATA) {
 				$(video).objectdetect("all", {scaleMin: 3, scaleFactor: 1.1, classifier: objectdetect.frontalface}, function(allcoords) {
-					var i = 0;
-					while (allcoords[i]) {
-						var coords = smoother.smooth(allcoords[i]);
-						$("#face-box"+ i).css({
+					$.each(allcoords, function(index, coords) {
+						coords = smoother.smooth(coords);
+						getFaceBox(index).css({
 							"left":    ~~(coords[0] + coords[2] * 1.0/8 + $(video).offset().left) + "px",
 							"top":     ~~(coords[1] + coords[3] * 0.8/8 + $(video).offset().top) + "px",
 							"width":   ~~(coords[2] * 6/8) + "px",
 							"height":  ~~(coords[3] * 6/8) + "px",
 							"display": "block"
 						});
-						i++;
-					}
+					});
 				});
 			}
 		}
@@ -69,7 +80,5 @@
 <body>
     <h1>Face Detect</h1>
     <video id="video"></video>
-    <div id="face-box0" class="red-box"></div>
-    <div id="face-box1" class="red-box"></div>
 </body>
 </html>
