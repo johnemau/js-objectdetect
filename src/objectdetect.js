@@ -1,4 +1,4 @@
-EagleEye = function(dataSource, detectors){
+EagleEye = function(dataSource, detectors, detectorMaps){
     var isFinding = false,
         numDetectors = detectors.length,
         defaultOptions = {
@@ -14,11 +14,14 @@ EagleEye = function(dataSource, detectors){
             options = _.defaults(options, defaultOptions);
 
             for (index in detectors) {
-                var specificOptions = _.defaults({
-                    classifier: objectdetect[detectors[index]]
-                }, options);
+                var scaledOptions = {
+                        scaleMin: options.scaleMin * detectorMaps[detectors[index]],
+                        scaleFactor: Math.pow(options.scaleFactor, 1/detectorMaps[detectors[index]])
+                    };
 
-                $(dataSource).objectdetect('all', specificOptions, function(coordArray) {
+                scaledOptions.classifier = objectdetect[detectors[index]];
+
+                $(dataSource).objectdetect('all', scaledOptions, function(coordArray) {
                     data = _.union(data, _.map(coordArray, function(coord) {
                         return {
                             type: detectors[index],
