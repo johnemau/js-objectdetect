@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<title>Detect your face</title>
 	
 	<script src="js/compatibility.js"></script>
 	<script src="js/smoother.js"></script>
@@ -45,16 +44,16 @@
             eye: 1/3
         });
 	
-		function getFaceBox(index, type) {
-			var $facebox = $("#face-box-" + index);
+		function getBox(index, type) {
+			var $box = $("#box-" + index);
 			// try to get existing box
-			if($facebox.length > 0) {
-				return $facebox;	
+			if($box.length > 0) {
+				return $box;	
 			} else {
-				//add new facebox
-				var $newfacebox = $('<div id="face-box-' + index + '" class="' + type + ' box">');
-				$("#faceboxbox").append($newfacebox);
-				return $newfacebox;
+				//add new box
+				var $newbox = $('<div id="box-' + index + '" class="' + type + ' box">');
+				$("#faceboxbox").append($newbox);
+				return $newbox;
 			}
 		}
 
@@ -66,7 +65,7 @@
 					$("#faceboxbox").empty();
 					$.each(allcoords, function(index, coordObj) {
 						var coords = smoother.smooth(coordObj.data);
-						getFaceBox(index, coordObj.type).css({
+						getBox(index, coordObj.type).css({
 							"left":    ~~(coords[0] + coords[2] * 1.0/8 + $(video).offset().left) + "px",
 							"top":     ~~(coords[1] + coords[3] * 0.8/8 + $(video).offset().top) + "px",
 							"width":   ~~(coords[2] * 6/8) + "px",
@@ -83,12 +82,14 @@
     <style type="text/css">
 	.box {
 	  position: absolute;
+	  border-style: solid;
+	  border-width: medium;
 	}
 	.frontalface {
-	  border: 5px solid red;
+	  border-color: red;
 	}
 	.eye {
-	  border: 5px solid blue;
+	  border-color: blue;
 	}
     </style>
 </head>
