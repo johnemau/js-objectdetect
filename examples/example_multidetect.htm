@@ -66,10 +66,10 @@
 					$.each(allcoords, function(index, coordObj) {
 						var coords = smoother.smooth(coordObj.data);
 						getBox(index, coordObj.type).css({
-							"left":    ~~(coords[0] + coords[2] * 1.0/8 + $(video).offset().left) + "px",
-							"top":     ~~(coords[1] + coords[3] * 0.8/8 + $(video).offset().top) + "px",
-							"width":   ~~(coords[2] * 6/8) + "px",
-							"height":  ~~(coords[3] * 6/8) + "px",
+							"left":    coords[0] + $(video).offset().left + "px",
+							"top":     coords[1] + $(video).offset().top + "px",
+							"width":   coords[2] + "px",
+							"height":  coords[3] + "px",
 							"display": "block"
 						});
 					});
