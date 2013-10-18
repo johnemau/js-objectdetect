@@ -40,10 +40,9 @@
 			alert(error);
 		}
 
-		var ee = new EagleEye(video, ['frontalface', 'eye', 'smile'], {
+		var ee = new EagleEye(video, ['frontalface', 'eye'], {
             frontalface: 1,
-            eye: 1/3,
-            smile: 1/2
+            eye: 1/3
         });
 	
 		function getBox(index, type) {
@@ -100,7 +99,7 @@
 </head>
 
 <body>
-    <h1>Face and Eye Detect</h1>
+    <h1>Multi Detect</h1>
     <video id="video"></video>
     <div id="faceboxbox"></div>
 </body>
