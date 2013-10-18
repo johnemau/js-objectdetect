@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <script src="js/compatibility.js"></script>
+    <script src="js/smoother.js"></script>
+
+    <script src="js/objectdetect.js"></script>
+    <script src="js/objectdetect.handfist.js"></script>
+
+    <script src="http://code.jquery.com/jquery-1.8.0.min.js"></script>
+    <script src="js/jquery.objectdetect.js"></script>
+
+    <script src="../node_modules/underscore/underscore.js"></script>
+    <script src="js/eagleeye.js"></script>
+
+    <script>
+        var smoother = new Smoother(0.85, [0, 0, 0, 0, 0]);
+
+        $(window).load(function() {
+
+            var video = $("#video").get(0);
+            try {
+                compatibility.getUserMedia({video: true}, function(stream) {
+                    try {
+                        video.src = compatibility.URL.createObjectURL(stream);
+                    } catch (error) {
+                        video.src = stream;
+                    }
+                    video.play();
+                    compatibility.requestAnimationFrame(tick);
+                }, function (error) {
+                    alert("WebRTC not available");
+                });
+            } catch (error) {
+                alert(error);
+            }
+
+            var ee = new EagleEye(video, ['handfist'], {
+                frontalface: 1,
+                eye: 1/3
+            });
+
+            function getBox(index, type) {
+                var $box = $("#box-" + index);
+                // try to get existing box
+                if($box.length > 0) {
+                    return $box;
+                } else {
+                    //add new box
+                    var $newbox = $('<div id="box-' + index + '" class="' + type + ' box">');
+                    $("#faceboxbox").append($newbox);
+                    return $newbox;
+                }
+            }
+
+            var framesSinceLastFist = 100;
+            var lastFist = null;
+            var successfulFrames = 0;
+
+            function differenceBetween(objA, objB) {
+                return Math.sqrt(Math.pow(objA.data[1] - objB.data[1], 2) + Math.pow(objA.data[0] - objB.data[0], 2));
+            }
+
+            function tick() {
+                compatibility.requestAnimationFrame(tick);
+
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    ee.detect({scaleMin: 1, scaleFactor: 1.25}, function(fists) {
+                        $("#faceboxbox").empty();
+                        $.each(fists, function(index, coordObj) {
+                            var coords = smoother.smooth(coordObj.data);
+                            getBox(index, coordObj.type).css({
+                                "left":    coords[0] + $(video).offset().left + "px",
+                                "top":     coords[1] + $(video).offset().top + "px",
+                                "width":   coords[2] + "px",
+                                "height":  coords[3] + "px",
+                                "display": "block"
+                            });
+                        });
+
+                        var numFists = fists.length;
+
+                        if (numFists <= 0) {
+                            framesSinceLastFist++;
+                        }
+                        else {
+                            if (framesSinceLastFist > 15) {
+                                if (numFists === 1) {
+                                    lastFist = fists[0];
+                                    framesSinceLastFist = 0;
+                                    console.log(successfulFrames);
+                                    successfulFrames = 0;
+                                }
+                                else {
+                                    framesSinceLastFist++;
+                                }
+                            }
+                            else {
+                                var closestFist = null;
+                                $.each(fists, function (index, fist) {
+                                    if (closestFist == null) {
+                                        closestFist = fist;
+                                    }
+                                    else {
+                                        if (differenceBetween(lastFist, fist) < differenceBetween(lastFist, closestFist)) {
+                                            closestFist = fist;
+                                        }
+                                    }
+                                });
+
+                                if (lastFist.data[1] < closestFist.data[1] && Math.abs(closestFist.data[0] - lastFist.data[0]) < 0.5 * (closestFist.data[1] - lastFist.data[1])) {
+                                    successfulFrames++;
+                                    framesSinceLastFist = 0;
+                                }
+                                else {
+                                    framesSinceLastFist++;
+                                }
+                            }
+                        }
+
+                        if (successfulFrames > 35) {
+                            alert('you just logged out.');
+                        }
+                    });
+                }
+            }
+        });
+
+    </script>
+    <style type="text/css">
+        .box {
+            position: absolute;
+            border-style: solid;
+            border-width: medium;
+        }
+        .handfist {
+            border-color: red;
+        }
+        .eye {
+            border-color: blue;
+        }
+        .smile {
+            border-color: yellow;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Multi Detect</h1>
+<video id="video"></video>
+<div id="faceboxbox"></div>
+</body>
+</html>

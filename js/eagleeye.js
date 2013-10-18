@@ -30,7 +30,6 @@ EagleEye = function(dataSource, detectors, detectorMaps){
                     }));
                     returned++;
                     if (returned === numDetectors) {
-                        console.log(data);
                         callback.call({}, data);
                         isFinding = false;
                     }
